@@ -4,8 +4,6 @@ const ELEMENT_PATH_ACCURACY_LEVEL = 2;
 
 const search_result_shortcut = {
   options: {
-    wrapNavigation: false,
-    autoSelectFirst: true,
     nextKey: "down, j",
     previousKey: "up, k",
     navigateKey: "return, space",
@@ -15,9 +13,9 @@ const search_result_shortcut = {
   },
 
   init() {
-    this.shortcutElements = [
-      ...storage.getElementsOfthisHost(window.location.hostname)
-    ];
+    this.shortcutElements = storage.getElementsOfthisHost(
+      window.location.hostname
+    );
 
     console.log(
       "host",
@@ -27,10 +25,10 @@ const search_result_shortcut = {
     );
     this._initSearcher();
     this._bindHotKeys();
-    this._registerEvents();
+    this._registerEventListener();
   },
 
-  refresh() {
+  _refresh() {
     if (this._isCurrentHostShortcutAvailable()) {
       if (!this.searcher) {
         this._initSearcher();
@@ -59,7 +57,7 @@ const search_result_shortcut = {
     return !!this.shortcutElements.find(path => elementPath == path);
   },
 
-  findNearestANodePathUpwards(element) {
+  _findNearestHrefNodePathUpwards(element) {
     console.log("findNearestANodePathUpwards", element);
     if (!element) return;
 
@@ -100,18 +98,19 @@ const search_result_shortcut = {
       return (
         element &&
         element.parentNode &&
-        this.findNearestANodePathUpwards(element.parentNode)
+        this._findNearestHrefNodePathUpwards(element.parentNode)
       );
     }
   },
 
-  _registerEvents() {
+  _registerEventListener() {
     document.onmousedown = element => {
+      // right click
       if (element.button != 2) return;
 
-      let path = this.findNearestANodePathUpwards(element.srcElement);
+      let path = this._findNearestHrefNodePathUpwards(element.srcElement);
       if (!path) {
-        console.warn("Can not find nearest node a of elements:", element);
+        console.warn("Can not find the nearest href node of element:", element);
         return;
       }
 
@@ -122,7 +121,8 @@ const search_result_shortcut = {
       };
 
       chrome.runtime.sendMessage({
-        elementInfo: info
+        action: "updateContextMenu",
+        data: info
       });
 
       console.log("onmousedown", element, info);
@@ -165,7 +165,7 @@ const search_result_shortcut = {
   _refreshPopup() {
     let data = this.searcher.getEachNodeCount();
     chrome.runtime.sendMessage({
-      action: "sendPopupData",
+      action: "updatePopup",
       data: data
     });
   },
@@ -177,7 +177,7 @@ const search_result_shortcut = {
 
     this.shortcutElements.push(path);
     storage.appendElementToHost(window.location.hostname, path);
-    this.refresh();
+    this._refresh();
   },
 
   _removeElementPath(path) {
@@ -190,7 +190,7 @@ const search_result_shortcut = {
 
     this.shortcutElements.splice(index, 1);
     storage.removeElementFromHost(window.location.hostname, path);
-    this.refresh();
+    this._refresh();
   },
 
   _highlightElementsWithPath(data) {
@@ -210,13 +210,13 @@ const search_result_shortcut = {
   _bindHotKeys() {
     if (!this._isCurrentHostShortcutAvailable()) return;
 
-    this._bind(this.options.nextKey, () => {
+    this._bindKey(this.options.nextKey, () => {
       if (this.searcher) {
         this.searcher.refresh();
         this.searcher.focusNext();
       }
     });
-    this._bind(this.options.previousKey, () => {
+    this._bindKey(this.options.previousKey, () => {
       if (this.searcher) {
         this.searcher.refresh();
         this.searcher.focusPrevious();
@@ -229,7 +229,7 @@ const search_result_shortcut = {
     key.unbind(this.options.previousKey);
   },
 
-  _bind(shortcut, callback) {
+  _bindKey(shortcut, callback) {
     key(shortcut, function(event) {
       callback();
       if (event !== null) {
@@ -254,14 +254,17 @@ function Searcher(targetPath) {
   this.focus = index => {
     index = this.clampIndex(index);
     if (!this.nodes[index]) return;
-    this.nodes[this.focusedIndex] &&
-      this.nodes[this.focusedIndex].setAttribute(
-        HIGHLIGHTED_ELEMENT_ATTR,
-        false
-      );
+    if (this.nodes[this.focusedIndex]) {
+        this.nodes[this.focusedIndex].setAttribute(
+          HIGHLIGHTED_ELEMENT_ATTR,
+          false
+        );
+        this.nodes[this.focusedIndex].blur();
+    }
 
     this.nodes[index].setAttribute(HIGHLIGHTED_ELEMENT_ATTR, true);
     this.nodes[index].focus();
+    this.nodes[index].scrollIntoViewIfNeeded();
 
     this.focusedIndex = index;
   };
@@ -285,6 +288,8 @@ function Searcher(targetPath) {
         item.setAttribute(attr, "true");
       }
     });
+
+    elements[0] && elements[0].scrollIntoViewIfNeeded();
   };
 
   this.removeTintColor = path => {

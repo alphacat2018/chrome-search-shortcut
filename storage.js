@@ -1,7 +1,6 @@
 const storage = {
   init() {
     return new Promise((resolve, reject) => {
-      // this.clear()
       this.hosts = [];
       this.hostElementsMap = {};
 
@@ -25,12 +24,12 @@ const storage = {
   },
 
   getElementsOfthisHost(host) {
-    return this.hostElementsMap[host] || [];
+    let result = this.hostElementsMap[host] || [];
+    return [...result];
   },
 
   appendElementToHost(host, element) {
     let hostIndex = this.hosts.findIndex(i => i == host);
-    // new host
     if (hostIndex < 0) {
       this.hosts.push(host);
       chrome.storage.sync.set({ HOST_LIST: this.hosts }, function() {
@@ -105,9 +104,5 @@ const storage = {
         );
       });
     }
-  },
-
-  clear() {
-    chrome.storage.sync.clear();
   }
 };

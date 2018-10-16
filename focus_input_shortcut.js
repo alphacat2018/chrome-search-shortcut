@@ -8,20 +8,20 @@ const focus_input_shortcut = {
         }
 
         if (e.code === "KeyS" && e.altKey) {
-          this.tryFocusInput(e);
+          this._tryFocusFirstInput(e);
         } else if (e.key === "Alt") {
           this._waitingKeyS = true;
           setTimeout(() => {
             this._waitingKeyS = false;
           }, 300);
         } else if (e.key === "s" && this._waitingKeyS) {
-          this.tryFocusInput(e);
+          this._tryFocusFirstInput(e);
         }
       },
       false
     );
   },
-  tryFocusInput(e) {
+  _tryFocusFirstInput(e) {
     e.stopPropagation();
     e.preventDefault();
 
@@ -30,6 +30,7 @@ const focus_input_shortcut = {
     input && input.focus();
   }
 };
+
 function findFirstValidInput() {
   var sel = document.querySelector(
     // these are sane versions of what search field is named

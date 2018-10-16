@@ -1,61 +1,28 @@
-"use strict";
-
 let currentHostElements = document.getElementById("currentHostElements");
 let emptyPageText = document.getElementById("emptyPageText");
-
-// let removeAllElements = document.getElementById("removeAllElements");
-// let removeAllHosts = document.getElementById("removeAllHost");
-
-// removeAllElements.onclick = function(element) {
-//   chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-//     let data = {
-//       action: "removeAllElementsOfCurrentHost"
-//     };
-//     chrome.tabs.sendMessage(tabs[0].id, data, function(response) {});
-//   });
-
-//   //   chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-//   //     chrome.tabs.executeScript(tabs[0].id, { code: "window.location.reload()" });
-//   //   });
-// };
-
-// removeAllHosts.onclick = function(element) {
-//   chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-//     let data = {
-//       action: "removeAllHosts"
-//     };
-//     chrome.tabs.sendMessage(tabs[0].id, data, function(response) {});
-//   });
-
-//   // chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-//   //   chrome.tabs.executeScript(tabs[0].id, { code: "window.location.reload()" });
-//   // });
-// };
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log("popup request", request);
-  if (request.action == "sendPopupData") {
-    onElementDataReceived(request.data);
-  }
-});
 
 window.onload = function() {
   chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
     let data = {
       action: "onPopupOpened"
     };
-    chrome.tabs.sendMessage(tabs[0].id, data, function(response) {});
+    chrome.tabs.sendMessage(tabs[0].id, data);
   });
 };
 
-function onElementDataReceived(data) {
-  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-    var a = document.createElement("a");
-    a.href = tabs[0].url;
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log("popup request", request);
+  if (request.action == "updatePopup") {
+    onPopupDataReceived(request.data);
+  }
+});
 
-    if (data && data.length > 0) {
+function onPopupDataReceived(data) {
+  if (data && data.length > 0) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
       currentHostElements.innerHTML = "";
       emptyPageText.remove();
+
       data.forEach((item, index) => {
         let lineWrapper = document.createElement("div");
         lineWrapper.classList.add("lineWrapper");
@@ -107,6 +74,6 @@ function onElementDataReceived(data) {
         lineWrapper.appendChild(btnRemove);
         currentHostElements.appendChild(lineWrapper);
       });
-    }
-  });
+    });
+  }
 }
