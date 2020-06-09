@@ -177,7 +177,7 @@ const search_result_shortcut = {
 
     this.shortcutElements.push(path);
     storage.appendElementToHost(window.location.hostname, path);
-    this._refresh();
+    window.location.reload();
   },
 
   _removeElementPath(path) {
@@ -190,7 +190,7 @@ const search_result_shortcut = {
 
     this.shortcutElements.splice(index, 1);
     storage.removeElementFromHost(window.location.hostname, path);
-    this._refresh();
+    window.location.reload();
   },
 
   _highlightElementsWithPath(data) {
@@ -247,7 +247,17 @@ function Searcher(targetPath) {
   this.focusedIndex = -1;
 
   this.refresh = () => {
-    this.nodes = document.querySelectorAll(targetPath);
+    let queryResults = document.querySelectorAll(targetPath);
+    let filteredResults = [];
+    queryResults.forEach(item => {
+      // https://stackoverflow.com/a/11639664/5860133
+      // It is also reasonable to expect that an element that has no parent,
+      // or that is not added to the page itself (is not a descendant of the <body> of the page), will also have offsetParent==null
+      if (item.offsetParent) {
+        filteredResults.push(item);
+      }
+    });
+    this.nodes = filteredResults;
     console.log("this.nodes", this.nodes);
   };
 
@@ -255,11 +265,11 @@ function Searcher(targetPath) {
     index = this.clampIndex(index);
     if (!this.nodes[index]) return;
     if (this.nodes[this.focusedIndex]) {
-        this.nodes[this.focusedIndex].setAttribute(
-          HIGHLIGHTED_ELEMENT_ATTR,
-          false
-        );
-        this.nodes[this.focusedIndex].blur();
+      this.nodes[this.focusedIndex].setAttribute(
+        HIGHLIGHTED_ELEMENT_ATTR,
+        false
+      );
+      this.nodes[this.focusedIndex].blur();
     }
 
     this.nodes[index].setAttribute(HIGHLIGHTED_ELEMENT_ATTR, true);

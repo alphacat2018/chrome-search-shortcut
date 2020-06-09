@@ -8,31 +8,31 @@
 }
 
 [highlighted-search-result="true"] {
-  outline: 5px auto -webkit-focus-ring-color;
-  /* outline: 5px auto rgb(241, 114, 16) */
+  outline: 5px auto -webkit-focus-ring-color !important;
 }
 
 [tinted-search-result-0="true"] {
-  outline: 5px auto var(--tint-color0);
+  outline: 5px auto var(--tint-color0) !important;
 }
+
 [tinted-search-result-1="true"] {
-  outline: 5px auto var(--tint-color1);
+  outline: 5px auto var(--tint-color1) !important;
 }
 
 [tinted-search-result-2="true"] {
-  outline: 5px auto var(--tint-color2);
+  outline: 5px auto var(--tint-color2) !important;
 }
 
 [tinted-search-result-3="true"] {
-  outline: 5px auto var(--tint-color3);
+outline: 5px auto var(--tint-color3) !important;
 }
 
 [tinted-search-result-4="true"] {
-  outline: 5px auto var(--tint-color4);
+  outline: 5px auto var(--tint-color4) !important;
 }
 
 [tinted-search-result-5="true"] {
-  outline: 5px auto var(--tint-color5);
+  outline: 5px auto var(--tint-color5) !important;
 }
 
 #colorIndicator0 {

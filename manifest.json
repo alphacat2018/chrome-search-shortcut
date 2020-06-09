@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "chrome-search-shorthcut",
-  "version": "1.0.0",
+  "version": "0.0.0.1",
   "description": "",
   "content_scripts": [
     {
@@ -15,7 +15,7 @@
         "main.js"
       ],
       "css": ["main.css"],
-      "run_at": "document_start"
+      "run_at": "document_idle"
     }
   ],
   "background": {
